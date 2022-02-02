@@ -1,0 +1,97 @@
+---
+title: "Statistical Inference Course Project Part 2"
+author: "Vineet"
+date: "`r format(Sys.Date(), '%d %B, %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Part 2: Inferential Data Analysis on ToothGrowth Data
+
+### Overview
+
+In this part, we will load the ToothGrowth data and perform some basic exploratory data analyses. We will use confidence intervals and/or hypothesis tests to compare the effects of Supplements and Dosage (in mg) on Tooth growth in Guinea pigs
+
+### Loading the data and performing basic EDA
+
+The ToothGrowth data is about the effect of Vitamin C on tooth growth in Guinea pigs The response is the length of odontoblasts (cells responsible for tooth growth) in 60 guinea pigs. Each animal received one of three dose levels of vitamin C (0.5, 1, and 2 mg/day) by one of two delivery methods, orange juice or ascorbic acid (a form of vitamin C and coded as VC).
+
+```{r}
+
+library(datasets)
+library(ggplot2)
+data("ToothGrowth")
+head(ToothGrowth)
+
+```
+
+A data frame with 60 observations on 3 variables.
+
+[,1] len numeric Tooth length [,2] supp factor Supplement type (VC or OJ). [,3] dose numeric Dose in milligrams/day
+
+### Basic summary of data
+
+```{r}
+
+summary(ToothGrowth)
+
+```
+
+### Understanding effects of Supplements and Dose on Tooth growth
+
+```{r}
+
+ToothGrowth$dose <- as.factor(ToothGrowth$dose)
+
+plt3 <- ggplot(ToothGrowth, aes(x = dose, y = len, fill = dose)) +
+    geom_boxplot() +
+    facet_grid(.~supp, labeller = as_labeller(c("OJ" = "Orange Juice (OJ)", 
+                                                "VC" = "Ascorbic Acid (VC)"))) +
+    ggtitle("Effect of Supplement and Dosage on Tooth Length") +
+    xlab("Dosage (mg)") +  ylab("Tooth Length")
+plt3
+
+```
+
+### t test with supplements
+
+```{r}
+
+OJ <- ToothGrowth[ToothGrowth$supp == 'OJ',]$len
+VC <- ToothGrowth[ToothGrowth$supp == 'VC',]$len
+t.test(OJ, VC, alternative = "greater", paired = FALSE, var.equal = FALSE)
+
+```
+
+###### Null Hypothesis, H0_i:
+
+The difference in the means of tooth lengths when either OJ or VS supplement is taken is 0, i.e. supplements have no effect on tooth length
+
+### t tests with different dosages
+
+```{r}
+
+doseHalf <- ToothGrowth[ToothGrowth$dose == 0.5,]$len
+doseOne <- ToothGrowth[ToothGrowth$dose == 1,]$len
+doseTwo <- ToothGrowth[ToothGrowth$dose == 2,]$len
+
+t.test(doseOne, doseHalf, alternative = "greater", paired = FALSE, var.equal = FALSE)
+
+t.test(doseTwo, doseOne, alternative = "greater", paired = TRUE, var.equal = FALSE)
+
+```
+
+###### Null Hypothesis, H0_ii:
+
+The difference in the means of the tooth lengths when taking different amounts of dosages is 0, i.e., different dosages don't have any impact on tooth length
+
+### Conclusions
+
+Keeping our significance level, alpha, at 0.05 (5%) we conclude:
+
+-   t test with supplements OJ-VC has a very small p-value and thus we will reject the [Null Hypothesis, H0_i:]. The 95% Confidence Interval here doesn't include 0, thus we can say that Orange Juice (OJ) results in greater tooth length
+
+-   t test with different dosages has a very small p-value as well and thus we will reject the [Null Hypothesis, H0_ii:] also. The 95% Confidence Interval here doesn't include 0, suggesting that higher dosage (in mg) results in greater tooth length

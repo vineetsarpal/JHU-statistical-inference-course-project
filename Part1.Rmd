@@ -1,0 +1,89 @@
+---
+title: "Statistical Inference Course Project Part 1"
+author: "Vineet"
+date: "`r format(Sys.Date(), '%d %B, %Y')`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Part1: Exponential Distribution v/s Central Limit Theorem
+
+### Overview
+
+In this part, we will investigate the exponential distribution in R and compare it with the Central Limit Theorem. The exponential distribution can be simulated in R with rexp(n, lambda) where lambda is the rate parameter. The mean of exponential distribution is 1/lambda and the standard deviation is also 1/lambda. Set lambda = 0.2 for all of the simulations. We will investigate the distribution of averages of 40 exponentials by doing a thousand simulations.
+
+### Simulation
+
+```{r}
+library(ggplot2)
+sim <- 1000     # no of simulations
+n <- 40         # sample size
+lambda <- 0.2
+
+df_sim <- as.data.frame(matrix(rexp(n*sim, rate = lambda), sim, n))
+df_sim$mean <- rowMeans(df_sim)
+
+```
+
+### Mean Comparison
+
+```{r}
+
+sample_mean <- mean(df_sim$mean)
+paste("Sample Mean:", round(sample_mean,4))
+theory_mean <- 1/lambda
+paste("Theoretical Mean:", theory_mean)
+
+```
+
+The sample and the theoretical means are very close and roughly the same
+
+### Exponential Distribution of Sample Means
+
+```{r}
+
+plt1 <- ggplot(df_sim, aes(x = mean)) +
+    geom_histogram(col = "black", alpha = 0.5) +
+    geom_vline(aes(xintercept = sample_mean, col = "Sample Mean"), lwd = .8) + 
+    geom_vline(aes(xintercept = theory_mean, col = "Theoretical Mean"), lwd = .8) +
+    labs(title = "Exponential Distribution of Sample Means", x = "Sample Mean")
+plt1
+
+```
+
+We can see above how close both the sample and theoretical means are.
+
+### Variance Comparison
+
+```{r}
+
+sample_var <- var(df_sim$mean)
+paste("Sample Variance:", round(sample_var,4))
+theory_var <- (1/lambda)^2 / n
+paste("Theoretical Variance:", theory_var)
+
+```
+
+The sample and the theoretical variance values are close too
+
+### Showing Distribution of Sample Means as Normal
+
+Based on CLT, the Central Limit Theorem, the averages of samples must follow normal distribution
+
+```{r}
+
+plt2 <- ggplot(df_sim, aes(x = mean)) + 
+    geom_histogram(aes(y = ..density..), color = "black", alpha = 0.5) +
+    geom_density(col = "green", size = 1) +
+    ggtitle("Distribution of Sample means") + xlab("Sample Mean")
+plt2
+
+```
+
+The figure shows that the distribution of Sample Means is approximately normal
